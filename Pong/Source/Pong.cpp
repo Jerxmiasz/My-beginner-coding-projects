@@ -2,6 +2,8 @@
 #include <random>
 #include <cmath>
 #include <cstdlib>
+#include <thread>
+#include <chrono>
 
 
 int random(int x, int y) {
@@ -20,6 +22,7 @@ public:
     bool isRoundStart = true;
     double platformSpeed = 1;
     double ballSpeed = 1;
+    bool playerLost = false;
     sf::Vector2f sBallDirection;
     sf::Vector2f* ballDirection = &sBallDirection;
     //Prepare enviroment function
@@ -111,6 +114,11 @@ public:
             ballDirection->y = -ballDirection->y; // Reverse the y direction
         }
 
+        if (ball.getPosition().x <= 0 || ball.getPosition().x >= 781)
+        {
+            playerLost = true;
+        }
+
         // Check for collision with the left and right of the window
         if (ball.getPosition().x <= 0 || ball.getPosition().x + ball.getRadius() * 2 >= tamanoVentana.x)
         {
@@ -124,7 +132,8 @@ public:
         }
     }
     void drawEnviroment(sf::RenderWindow &ventanaPrincipal)
-    {
+    {   
+
         ventanaPrincipal.draw(plataformaIzquierda);
         ventanaPrincipal.draw(plataformaDerecha);
         ventanaPrincipal.draw(ball);
@@ -161,6 +170,15 @@ int main()
 
         game.handlePlatformMovement();
         game.handleBallMovement();
+        if (game.playerLost == true)
+        {   
+            game.prepareEnviroment(ventanaPrincipal);
+            game.playerLost = false;
+            game.isRoundStart = true;
+            std::this_thread::sleep_for(std::chrono::seconds(2));
+            game.handlePlatformMovement();
+            game.handleBallMovement();
+        }
 
         ventanaPrincipal.clear(sf::Color(0, 0, 0));
         game.drawEnviroment(ventanaPrincipal);
